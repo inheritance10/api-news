@@ -13,6 +13,9 @@ export class User extends Document{
 
   @Prop()
   password : string;
+
+  @Prop()
+  image_path : string;
 }
 
 export const UserShcema = SchemaFactory.createForClass(User);
