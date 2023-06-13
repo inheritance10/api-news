@@ -18,6 +18,12 @@ export class UserService {
     return JSON.stringify(users);
   }
 
+  async getUserById(userId: string): Promise<User> {
+    const user = await this.userModel.findById(userId);
+    return user;
+  }
+
+
   async signup(signupDto: SignupDto): Promise<User> {
     const { name, email, password } = signupDto;
 
@@ -49,7 +55,7 @@ export class UserService {
   async updateUserImage(userId: string, imageUrl: string): Promise<User> {
     const updatedUser = await this.userModel.findByIdAndUpdate(
       userId,
-      { image: imageUrl },
+      { image_path: imageUrl },
       { new: true }
     );
 

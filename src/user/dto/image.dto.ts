@@ -7,6 +7,6 @@ export class ImageDto {
 
   @IsNotEmpty()
   @IsString()
-  imagePath: string;
+  image_path: string;
 
 }

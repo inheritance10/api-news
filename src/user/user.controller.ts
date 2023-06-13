@@ -22,13 +22,28 @@ export class UserController {
   }
 
   @Post('/upload-image')
-  async uploadImage(@Body() imageDto: ImageDto): Promise<User> {
-    // Resim yükleme işlemini gerçekleştirin ve kullanıcıya atanacak resim yolunu alın
-    const imageUrl = await this.userService.uploadImage(imageDto.userId, imageDto.imagePath);
+  async uploadImage(@Body() imageDto: ImageDto): Promise<{ userName: string, imagePath: string, message: string }> {
+
+    // Kullanıcının adını alın
+    const user = await this.userService.getUserById(imageDto.userId);
+    const userName = user.name;
 
     // Kullanıcıyı güncelleyin ve resim yolunu kaydedin
-    const user = await this.userService.updateUserImage(imageUrl.id, imageUrl.image_path);
+    const updatedUser = await this.userService.updateUserImage(imageDto.userId, imageDto.image_path);
 
-    return user;
+    if (updatedUser) {
+      return {
+        userName: userName,
+        imagePath: updatedUser.image_path,
+        message: 'Resim yükleme başarılı'
+      };
+    } else {
+      return {
+        userName: userName,
+        imagePath: '',
+        message: 'Resim yükleme başarısız'
+      };
+    }
   }
+
 }
