@@ -5,6 +5,7 @@ import { Model } from "mongoose";
 import { SignupDto } from "./dto/signup.dto";
 import * as bcrypt from 'bcrypt';
 import _default from "ts-jest";
+import { ExceptionHandler } from "@nestjs/core/errors/exception-handler";
 
 @Injectable()
 export class UserService {
@@ -41,13 +42,40 @@ export class UserService {
     return user;
   }
 
-  async uploadImage(userId: string, imagePath: string): Promise<User> {
-    const updatedUser = await this.userModel.findByIdAndUpdate(userId, { image: imagePath }, { new: true });
+  async updateProfile(
+    userId: string,
+    email?: string,
+    name?: string,
+    about?: string,
+    gender?: string
+  ): Promise<User | NotFoundException> {
+    const updatedUser = await this.userModel.findOneAndUpdate(
+      { _id: userId },
+      {
+        $set: {
+          email: email || '',
+          name: name || '',
+          about: about || '',
+          gender: gender || ''
+        }
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return new NotFoundException("User not found");
+    }
 
     return updatedUser;
   }
 
+
+
+
+
   async updateUserImage(userId: string, imageUrl: string): Promise<User> {
+    const isAccountSuspended = await this.userModel.findOne({where : userId});
+
     const updatedUser = await this.userModel.findByIdAndUpdate(
       userId,
       { image_path: imageUrl },

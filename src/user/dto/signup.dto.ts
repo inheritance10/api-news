@@ -10,8 +10,9 @@ export class SignupDto {
   readonly email: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsString({message : 'Password must be string character'})
   @MinLength(6, { message: 'Password must be min 6 characters' })
   readonly password: string;
 
 }
+

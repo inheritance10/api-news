@@ -3,6 +3,7 @@ import {
   Post,
   Body,
   Get,
+  Patch,
   NotFoundException,
   BadRequestException,
   InternalServerErrorException
@@ -13,6 +14,7 @@ import { User } from "./schema/user.schema";
 import { ImageDto } from "./dto/image.dto";
 import { PasswordChangeDto } from "./dto/passwordChange.dto";
 import { AccountDto } from "./dto/account.dto";
+import { UpdateUserDto } from "./dto/UpdateUser.dto";
 
 @Controller('user')
 export class UserController {
@@ -31,8 +33,23 @@ export class UserController {
     return this.userService.signup(signupDto);
   }
 
+  @Patch('/update-profile')
+  async updateProfile(@Body() updateUserDto: UpdateUserDto): Promise<User | NotFoundException> {
+    try {
+      const { userId, email, name, about, gender } = updateUserDto;
+      return await this.userService.updateProfile(userId, email, name, about, gender);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException('User not found');
+      } else {
+        throw new InternalServerErrorException('An error occurred');
+      }
+    }
+  }
+
+
   @Post('/upload-image')
-  async uploadImage(@Body() imageDto: ImageDto): Promise<{ userName: string, imagePath: string, message: string }> {
+  async uploadImage(@Body() imageDto: ImageDto): Promise<{ userName?: string, imagePath?: string, message: string,statusCode? : number }> {
 
     // Kullanıcının adını alın
     const user = await this.userService.getUserById(imageDto.userId);
@@ -41,19 +58,27 @@ export class UserController {
     // Kullanıcıyı güncelleyin ve resim yolunu kaydedin
     const updatedUser = await this.userService.updateUserImage(imageDto.userId, imageDto.image_path);
 
-    if (updatedUser) {
+    if(updatedUser.status == false){
       return {
-        userName: userName,
-        imagePath: updatedUser.image_path,
-        message: 'Resim yükleme başarılı'
-      };
-    } else {
-      return {
-        userName: userName,
-        imagePath: '',
-        message: 'Resim yükleme başarısız'
-      };
+        statusCode : 401,
+        message: 'Kullanıcının hesabı dondurulmuş işlem yapılamaz.'
+      }
+    }else{
+      if (updatedUser) {
+        return {
+          userName: userName,
+          imagePath: updatedUser.image_path,
+          message: 'Resim yükleme başarılı'
+        };
+      } else {
+        return {
+          userName: userName,
+          imagePath: '',
+          message: 'Resim yükleme başarısız'
+        };
+      }
     }
+
   }
 
   @Post('/password-update')

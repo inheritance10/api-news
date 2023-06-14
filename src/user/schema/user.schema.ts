@@ -15,6 +15,12 @@ export class User extends Document{
   password : string;
 
   @Prop()
+  about : string;
+
+  @Prop()
+  gender : string;
+
+  @Prop()
   image_path : string;
 
   @Prop()
